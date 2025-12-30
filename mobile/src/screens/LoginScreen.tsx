@@ -10,6 +10,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 
 export const LoginScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [isLogin, setIsLogin] = useState(true);
@@ -18,6 +19,7 @@ export const LoginScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const { login, register } = useAuth();
+  const { colors } = useTheme();
 
   const handleSubmit = async () => {
     if (!email || !password) {
@@ -51,17 +53,18 @@ export const LoginScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.card}>
-        <Text style={styles.title}>{isLogin ? 'Welcome Back' : 'Create Account'}</Text>
-        <Text style={styles.subtitle}>
+    <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.card, { backgroundColor: colors.card, shadowColor: colors.text }]}>
+        <Text style={[styles.title, { color: colors.text }]}>{isLogin ? 'Welcome Back' : 'Create Account'}</Text>
+        <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
           {isLogin ? 'Enter your credentials to access your wallet' : 'Sign up to start trading currencies'}
         </Text>
 
         {!isLogin && (
           <TextInput
-            style={styles.input}
+            style={[styles.input, { borderColor: colors.border, color: colors.text, backgroundColor: colors.inputBackground }]}
             placeholder="Username"
+            placeholderTextColor={colors.textSecondary}
             value={username}
             onChangeText={setUsername}
             autoCapitalize="none"
@@ -69,8 +72,9 @@ export const LoginScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
         )}
 
         <TextInput
-          style={styles.input}
+          style={[styles.input, { borderColor: colors.border, color: colors.text, backgroundColor: colors.inputBackground }]}
           placeholder="Email"
+          placeholderTextColor={colors.textSecondary}
           value={email}
           onChangeText={setEmail}
           keyboardType="email-address"
@@ -78,15 +82,16 @@ export const LoginScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
         />
 
         <TextInput
-          style={styles.input}
+          style={[styles.input, { borderColor: colors.border, color: colors.text, backgroundColor: colors.inputBackground }]}
           placeholder="Password"
+          placeholderTextColor={colors.textSecondary}
           value={password}
           onChangeText={setPassword}
           secureTextEntry
         />
 
         <TouchableOpacity
-          style={styles.button}
+          style={[styles.button, { backgroundColor: colors.primary }]}
           onPress={handleSubmit}
           disabled={loading}
         >
@@ -108,7 +113,7 @@ export const LoginScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
             setUsername('');
           }}
         >
-          <Text style={styles.switchText}>
+          <Text style={[styles.switchText, { color: colors.primary }]}>
             {isLogin ? "Don't have an account? Sign Up" : 'Already have an account? Log In'}
           </Text>
         </TouchableOpacity>
@@ -120,15 +125,12 @@ export const LoginScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    backgroundColor: '#f0f9ff',
-    justifyContent: 'center',
     padding: 20,
+    justifyContent: 'center',
   },
   card: {
-    backgroundColor: '#fff',
     borderRadius: 16,
     padding: 24,
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
@@ -137,27 +139,22 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#1e293b',
     textAlign: 'center',
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 14,
-    color: '#64748b',
     textAlign: 'center',
     marginBottom: 24,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#e2e8f0',
     borderRadius: 12,
     padding: 16,
     fontSize: 16,
     marginBottom: 16,
-    backgroundColor: '#fff',
   },
   button: {
-    backgroundColor: '#0284c7',
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
@@ -173,7 +170,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   switchText: {
-    color: '#0284c7',
     fontSize: 14,
     fontWeight: '600',
   },

@@ -10,10 +10,12 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { apiService } from '../services/api';
 
 export const WalletScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const { user, refreshUser } = useAuth();
+  const { colors } = useTheme();
   const [amount, setAmount] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -41,33 +43,33 @@ export const WalletScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   if (!user) return null;
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.title}>My Wallet</Text>
+    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={[styles.title, { color: colors.text }]}>My Wallet</Text>
 
-      <View style={styles.balanceCard}>
-        <Text style={styles.balanceLabel}>Available PLN</Text>
-        <Text style={styles.balanceAmount}>
+      <View style={[styles.balanceCard, { backgroundColor: colors.card }]}>
+        <Text style={[styles.balanceLabel, { color: colors.textSecondary }]}>Available PLN</Text>
+        <Text style={[styles.balanceAmount, { color: colors.text }]}>
           {user.wallet.PLN.toLocaleString('pl-PL', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
           })}{' '}
-          <Text style={styles.currency}>PLN</Text>
+          <Text style={[styles.currency, { color: colors.textSecondary }]}>PLN</Text>
         </Text>
       </View>
 
       <View style={styles.grid}>
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Currency Holdings</Text>
+        <View style={[styles.card, { backgroundColor: colors.card }]}>
+          <Text style={[styles.cardTitle, { color: colors.text }]}>Currency Holdings</Text>
           <View style={styles.holdingsList}>
             {Object.entries(user.wallet).filter(([k, v]) => k !== 'PLN' && (v as number) > 0).length === 0 ? (
-              <Text style={styles.emptyText}>You don't hold any foreign currencies yet.</Text>
+              <Text style={[styles.emptyText, { color: colors.textSecondary }]}>You don't hold any foreign currencies yet.</Text>
             ) : (
               Object.entries(user.wallet).map(([code, amount]) => {
                 if (code === 'PLN' || (amount as number) <= 0) return null;
                 return (
-                  <View key={code} style={styles.holdingItem}>
-                    <Text style={styles.holdingCode}>{code}</Text>
-                    <Text style={styles.holdingAmount}>{(amount as number).toFixed(4)}</Text>
+                  <View key={code} style={[styles.holdingItem, { backgroundColor: colors.background }]}>
+                    <Text style={[styles.holdingCode, { color: colors.text }]}>{code}</Text>
+                    <Text style={[styles.holdingAmount, { color: colors.textSecondary }]}>{(amount as number).toFixed(4)}</Text>
                   </View>
                 );
               })
@@ -75,25 +77,26 @@ export const WalletScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
           </View>
         </View>
 
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Top Up Account</Text>
+        <View style={[styles.card, { backgroundColor: colors.card }]}>
+          <Text style={[styles.cardTitle, { color: colors.text }]}>Top Up Account</Text>
           <View style={styles.form}>
             <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Amount (PLN)</Text>
-              <View style={styles.inputContainer}>
+              <Text style={[styles.inputLabel, { color: colors.textSecondary }]}>Amount (PLN)</Text>
+              <View style={[styles.inputContainer, { borderColor: colors.border, backgroundColor: colors.inputBackground }]}>
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, { color: colors.text }]}
                   value={amount}
                   onChangeText={setAmount}
                   placeholder="0.00"
+                  placeholderTextColor={colors.textSecondary}
                   keyboardType="numeric"
                 />
-                <Text style={styles.inputSuffix}>PLN</Text>
+                <Text style={[styles.inputSuffix, { color: colors.textSecondary }]}>PLN</Text>
               </View>
             </View>
 
             <TouchableOpacity
-              style={styles.fundButton}
+              style={[styles.fundButton, { backgroundColor: colors.success }]}
               onPress={handleFund}
               disabled={loading}
             >
@@ -113,24 +116,25 @@ export const WalletScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#1e293b',
     padding: 16,
   },
   balanceCard: {
-    backgroundColor: '#fff',
     borderRadius: 16,
     padding: 24,
     margin: 16,
     marginTop: 0,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
   },
   balanceLabel: {
     fontSize: 12,
-    color: '#64748b',
     fontWeight: '600',
     textTransform: 'uppercase',
     marginBottom: 8,
@@ -138,19 +142,16 @@ const styles = StyleSheet.create({
   balanceAmount: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#1e293b',
   },
   currency: {
     fontSize: 18,
     fontWeight: 'normal',
-    color: '#94a3b8',
   },
   grid: {
     padding: 16,
     gap: 16,
   },
   card: {
-    backgroundColor: '#fff',
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
@@ -163,14 +164,12 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1e293b',
     marginBottom: 16,
   },
   holdingsList: {
     gap: 12,
   },
   emptyText: {
-    color: '#94a3b8',
     fontSize: 14,
     fontStyle: 'italic',
   },
@@ -178,18 +177,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#f8fafc',
     borderRadius: 12,
     padding: 12,
   },
   holdingCode: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#475569',
   },
   holdingAmount: {
     fontSize: 16,
-    color: '#64748b',
   },
   form: {
     gap: 16,
@@ -200,13 +196,11 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#475569',
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#e2e8f0',
     borderRadius: 12,
     paddingRight: 16,
   },
@@ -218,10 +212,8 @@ const styles = StyleSheet.create({
   inputSuffix: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: '#94a3b8',
   },
   fundButton: {
-    backgroundColor: '#10b981',
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',

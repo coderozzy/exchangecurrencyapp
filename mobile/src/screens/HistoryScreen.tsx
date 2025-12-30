@@ -7,11 +7,13 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { apiService } from '../services/api';
 import { Transaction, TransactionType } from '../types';
 
 export const HistoryScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const { user } = useAuth();
+  const { colors } = useTheme();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -52,11 +54,11 @@ export const HistoryScreen: React.FC<{ navigation: any }> = ({ navigation }) => 
       case TransactionType.DEPOSIT:
         return '#3b82f6';
       case TransactionType.BUY:
-        return '#10b981';
+        return colors.success;
       case TransactionType.SELL:
-        return '#ef4444';
+        return colors.error;
       default:
-        return '#64748b';
+        return colors.textSecondary;
     }
   };
 
@@ -71,32 +73,32 @@ export const HistoryScreen: React.FC<{ navigation: any }> = ({ navigation }) => 
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.title}>Transaction History</Text>
+    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={[styles.title, { color: colors.text }]}>Transaction History</Text>
 
       {loading ? (
         <View style={styles.centerContainer}>
-          <ActivityIndicator size="large" color="#0284c7" />
-          <Text style={styles.loadingText}>Loading history...</Text>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={[styles.loadingText, { color: colors.textSecondary }]}>Loading history...</Text>
         </View>
       ) : transactions.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>
+        <View style={[styles.emptyContainer, { backgroundColor: colors.card }]}>
+          <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
             No transactions yet. Start trading or fund your wallet!
           </Text>
         </View>
       ) : (
         <View style={styles.list}>
           {transactions.map((tx) => (
-            <View key={tx.id} style={styles.transactionItem}>
+            <View key={tx.id} style={[styles.transactionItem, { backgroundColor: colors.card }]}>
               <View style={[styles.iconContainer, { backgroundColor: `${getTransactionColor(tx.type)}20` }]}>
                 <Text style={styles.icon}>{getTransactionIcon(tx.type)}</Text>
               </View>
               <View style={styles.transactionInfo}>
-                <Text style={styles.transactionType}>
+                <Text style={[styles.transactionType, { color: colors.text }]}>
                   {tx.type === TransactionType.DEPOSIT ? 'Wallet Funding' : `${tx.type} ${tx.currencyCode}`}
                 </Text>
-                <Text style={styles.transactionDate}>
+                <Text style={[styles.transactionDate, { color: colors.textSecondary }]}>
                   {new Date(tx.date).toLocaleDateString()} • {new Date(tx.date).toLocaleTimeString()}
                 </Text>
               </View>
@@ -104,13 +106,14 @@ export const HistoryScreen: React.FC<{ navigation: any }> = ({ navigation }) => 
                 <Text
                   style={[
                     styles.amountText,
-                    tx.type === TransactionType.SELL && styles.amountTextPositive,
+                    { color: colors.text },
+                    tx.type === TransactionType.SELL && { color: colors.success },
                   ]}
                 >
                   {formatTransaction(tx)}
                 </Text>
                 {tx.type !== TransactionType.DEPOSIT && (
-                  <Text style={styles.rateText}>
+                  <Text style={[styles.rateText, { color: colors.textSecondary }]}>
                     {tx.amountPLN.toFixed(2)} PLN @ {tx.rate.toFixed(4)}
                   </Text>
                 )}
@@ -126,12 +129,10 @@ export const HistoryScreen: React.FC<{ navigation: any }> = ({ navigation }) => 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#1e293b',
     padding: 16,
   },
   centerContainer: {
@@ -140,18 +141,15 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 16,
-    color: '#64748b',
     fontSize: 14,
   },
   emptyContainer: {
-    backgroundColor: '#fff',
     borderRadius: 16,
     padding: 40,
     margin: 16,
     alignItems: 'center',
   },
   emptyText: {
-    color: '#64748b',
     fontSize: 14,
     textAlign: 'center',
   },
@@ -161,7 +159,6 @@ const styles = StyleSheet.create({
   transactionItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
@@ -188,12 +185,10 @@ const styles = StyleSheet.create({
   transactionType: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#1e293b',
     marginBottom: 4,
   },
   transactionDate: {
     fontSize: 12,
-    color: '#94a3b8',
   },
   transactionAmount: {
     alignItems: 'flex-end',
@@ -201,14 +196,9 @@ const styles = StyleSheet.create({
   amountText: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#1e293b',
     marginBottom: 4,
-  },
-  amountTextPositive: {
-    color: '#10b981',
   },
   rateText: {
     fontSize: 12,
-    color: '#94a3b8',
   },
 });

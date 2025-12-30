@@ -13,6 +13,7 @@ import { Picker } from '@react-native-picker/picker';
 import { LineChart } from 'react-native-chart-kit';
 import { Dimensions } from 'react-native';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { apiService } from '../services/api';
 import { ExchangeRate, TransactionType, RateHistoryItem } from '../types';
 
@@ -20,8 +21,9 @@ const screenWidth = Dimensions.get('window').width;
 
 export const ExchangeScreen: React.FC<{ navigation: any; route: any }> = ({ navigation, route }) => {
   const { user, refreshUser } = useAuth();
+  const { colors, theme } = useTheme();
   const initialCode = route?.params?.code || 'USD';
-  
+
   const [rates, setRates] = useState<ExchangeRate[]>([]);
   const [selectedCode, setSelectedCode] = useState(initialCode);
   const [amount, setAmount] = useState('');
@@ -91,9 +93,9 @@ export const ExchangeScreen: React.FC<{ navigation: any; route: any }> = ({ navi
 
   if (loading) {
     return (
-      <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#0284c7" />
-        <Text style={styles.loadingText}>Loading market data...</Text>
+      <View style={[styles.centerContainer, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={[styles.loadingText, { color: colors.textSecondary }]}>Loading market data...</Text>
       </View>
     );
   }
@@ -103,25 +105,26 @@ export const ExchangeScreen: React.FC<{ navigation: any; route: any }> = ({ navi
     datasets: [
       {
         data: history.slice(-10).map((h) => h.mid),
-        color: (opacity = 1) => `rgba(2, 132, 199, ${opacity})`,
+        color: (opacity = 1) => colors.primary,
         strokeWidth: 2,
       },
     ],
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.title}>Currency Exchange</Text>
+    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={[styles.title, { color: colors.text }]}>Currency Exchange</Text>
 
-      <View style={styles.card}>
+      <View style={[styles.card, { backgroundColor: colors.card }]}>
         <View style={styles.selectorContainer}>
           <Picker
             selectedValue={selectedCode}
             onValueChange={setSelectedCode}
-            style={styles.picker}
+            style={[styles.picker, { color: colors.text, backgroundColor: colors.inputBackground }]}
+            dropdownIconColor={colors.text}
           >
             {rates.map((r) => (
-              <Picker.Item key={r.code} label={`${r.code} - ${r.currency}`} value={r.code} />
+              <Picker.Item key={r.code} label={`${r.code} - ${r.currency}`} value={r.code} color={colors.text} />
             ))}
           </Picker>
         </View>
@@ -133,15 +136,20 @@ export const ExchangeScreen: React.FC<{ navigation: any; route: any }> = ({ navi
               width={screenWidth - 64}
               height={200}
               chartConfig={{
-                backgroundColor: '#fff',
-                backgroundGradientFrom: '#fff',
-                backgroundGradientTo: '#fff',
+                backgroundColor: colors.card,
+                backgroundGradientFrom: colors.card,
+                backgroundGradientTo: colors.card,
                 decimalPlaces: 4,
-                color: (opacity = 1) => `rgba(2, 132, 199, ${opacity})`,
-                labelColor: (opacity = 1) => `rgba(100, 116, 139, ${opacity})`,
+                color: (opacity = 1) => colors.primary,
+                labelColor: (opacity = 1) => colors.textSecondary,
                 style: {
                   borderRadius: 16,
                 },
+                propsForDots: {
+                  r: "4",
+                  strokeWidth: "2",
+                  stroke: colors.primary
+                }
               }}
               bezier
               style={styles.chart}
@@ -149,28 +157,30 @@ export const ExchangeScreen: React.FC<{ navigation: any; route: any }> = ({ navi
           </View>
         )}
 
-        <View style={styles.modeContainer}>
+        <View style={[styles.modeContainer, { backgroundColor: theme === 'dark' ? '#334155' : '#f1f5f9' }]}>
           <TouchableOpacity
-            style={[styles.modeButton, mode === TransactionType.BUY && styles.modeButtonActive]}
+            style={[styles.modeButton, mode === TransactionType.BUY && { backgroundColor: colors.card }]}
             onPress={() => setMode(TransactionType.BUY)}
           >
             <Text
               style={[
                 styles.modeButtonText,
-                mode === TransactionType.BUY && styles.modeButtonTextActive,
+                { color: colors.textSecondary },
+                mode === TransactionType.BUY && { color: colors.primary },
               ]}
             >
               Buy {selectedCode}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.modeButton, mode === TransactionType.SELL && styles.modeButtonActive]}
+            style={[styles.modeButton, mode === TransactionType.SELL && { backgroundColor: colors.card }]}
             onPress={() => setMode(TransactionType.SELL)}
           >
             <Text
               style={[
                 styles.modeButtonText,
-                mode === TransactionType.SELL && styles.modeButtonTextActive,
+                { color: colors.textSecondary },
+                mode === TransactionType.SELL && { color: colors.primary },
               ]}
             >
               Sell {selectedCode}
@@ -178,44 +188,45 @@ export const ExchangeScreen: React.FC<{ navigation: any; route: any }> = ({ navi
           </TouchableOpacity>
         </View>
 
-        <View style={styles.rateContainer}>
-          <Text style={styles.rateLabel}>Rate</Text>
-          <Text style={styles.rateValue}>
+        <View style={[styles.rateContainer, { backgroundColor: colors.background }]}>
+          <Text style={[styles.rateLabel, { color: colors.textSecondary }]}>Rate</Text>
+          <Text style={[styles.rateValue, { color: colors.text }]}>
             1 {selectedCode} = {effectiveRate?.toFixed(4)} PLN
           </Text>
         </View>
 
         <View style={styles.inputContainer}>
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Amount ({selectedCode})</Text>
+            <Text style={[styles.inputLabel, { color: colors.textSecondary }]}>Amount ({selectedCode})</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { borderColor: colors.border, color: colors.text, backgroundColor: colors.inputBackground }]}
               value={amount}
               onChangeText={setAmount}
               placeholder="0.00"
+              placeholderTextColor={colors.textSecondary}
               keyboardType="numeric"
             />
           </View>
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Total (PLN)</Text>
-            <View style={styles.totalContainer}>
-              <Text style={styles.totalText}>{totalCost}</Text>
+            <Text style={[styles.inputLabel, { color: colors.textSecondary }]}>Total (PLN)</Text>
+            <View style={[styles.totalContainer, { borderColor: colors.border, backgroundColor: colors.background }]}>
+              <Text style={[styles.totalText, { color: colors.text }]}>{totalCost}</Text>
             </View>
           </View>
         </View>
 
         {user && mode === TransactionType.BUY && user.wallet.PLN < parseFloat(totalCost) && (
-          <Text style={styles.errorText}>Insufficient PLN funds</Text>
+          <Text style={[styles.errorText, { color: colors.error }]}>Insufficient PLN funds</Text>
         )}
 
         {user && mode === TransactionType.SELL && (user.wallet[selectedCode] || 0) < parseFloat(amount || '0') && (
-          <Text style={styles.errorText}>Insufficient {selectedCode} funds</Text>
+          <Text style={[styles.errorText, { color: colors.error }]}>Insufficient {selectedCode} funds</Text>
         )}
 
         <TouchableOpacity
           style={[
             styles.tradeButton,
-            mode === TransactionType.BUY ? styles.tradeButtonBuy : styles.tradeButtonSell,
+            mode === TransactionType.BUY ? { backgroundColor: colors.success } : { backgroundColor: colors.error },
             (processing || !amount || parseFloat(amount) <= 0) && styles.tradeButtonDisabled,
           ]}
           onPress={handleTrade}
@@ -237,7 +248,6 @@ export const ExchangeScreen: React.FC<{ navigation: any; route: any }> = ({ navi
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
   },
   centerContainer: {
     flex: 1,
@@ -247,17 +257,14 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 16,
-    color: '#64748b',
     fontSize: 14,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#1e293b',
     padding: 16,
   },
   card: {
-    backgroundColor: '#fff',
     borderRadius: 16,
     margin: 16,
     padding: 16,
@@ -269,11 +276,11 @@ const styles = StyleSheet.create({
   },
   selectorContainer: {
     marginBottom: 16,
+    borderRadius: 12,
+    overflow: 'hidden',
   },
   picker: {
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    borderRadius: 12,
+    height: 50,
   },
   chartContainer: {
     marginBottom: 16,
@@ -284,7 +291,6 @@ const styles = StyleSheet.create({
   },
   modeContainer: {
     flexDirection: 'row',
-    backgroundColor: '#f1f5f9',
     borderRadius: 12,
     padding: 4,
     marginBottom: 16,
@@ -295,26 +301,17 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
   },
-  modeButtonActive: {
-    backgroundColor: '#fff',
-  },
   modeButtonText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#64748b',
-  },
-  modeButtonTextActive: {
-    color: '#0284c7',
   },
   rateContainer: {
-    backgroundColor: '#f8fafc',
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
   },
   rateLabel: {
     fontSize: 12,
-    color: '#94a3b8',
     fontWeight: '600',
     textTransform: 'uppercase',
     marginBottom: 4,
@@ -322,7 +319,6 @@ const styles = StyleSheet.create({
   rateValue: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#1e293b',
   },
   inputContainer: {
     gap: 16,
@@ -334,29 +330,22 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#475569',
   },
   input: {
     borderWidth: 1,
-    borderColor: '#e2e8f0',
     borderRadius: 12,
     padding: 16,
     fontSize: 16,
-    backgroundColor: '#fff',
   },
   totalContainer: {
     borderWidth: 1,
-    borderColor: '#e2e8f0',
     borderRadius: 12,
     padding: 16,
-    backgroundColor: '#f8fafc',
   },
   totalText: {
     fontSize: 16,
-    color: '#64748b',
   },
   errorText: {
-    color: '#ef4444',
     fontSize: 12,
     marginBottom: 8,
   },
@@ -365,12 +354,6 @@ const styles = StyleSheet.create({
     padding: 16,
     alignItems: 'center',
     marginTop: 8,
-  },
-  tradeButtonBuy: {
-    backgroundColor: '#10b981',
-  },
-  tradeButtonSell: {
-    backgroundColor: '#ef4444',
   },
   tradeButtonDisabled: {
     opacity: 0.5,

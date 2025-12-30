@@ -9,11 +9,14 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { apiService } from '../services/api';
 import { ExchangeRate } from '../types';
+import { Ionicons } from '@expo/vector-icons';
 
 export const DashboardScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const { user } = useAuth();
+  const { colors, theme, toggleTheme } = useTheme();
   const [rates, setRates] = useState<ExchangeRate[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -58,19 +61,24 @@ export const DashboardScreen: React.FC<{ navigation: any }> = ({ navigation }) =
 
   if (loading) {
     return (
-      <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#0284c7" />
+      <View style={[styles.centerContainer, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
   return (
     <ScrollView
-      style={styles.container}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      style={[styles.container, { backgroundColor: colors.background }]}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.text} />}
     >
-      <View style={styles.headerCard}>
-        <Text style={styles.headerLabel}>Total Portfolio Value</Text>
+      <View style={[styles.headerCard, { backgroundColor: colors.primary }]}>
+        <View style={styles.headerTopRow}>
+          <Text style={[styles.headerLabel, { color: '#e0f2fe' }]}>Total Portfolio Value</Text>
+          <TouchableOpacity onPress={toggleTheme} style={styles.themeButton}>
+            <Ionicons name={theme === 'dark' ? 'sunny' : 'moon'} size={24} color="#fff" />
+          </TouchableOpacity>
+        </View>
         <Text style={styles.headerAmount}>
           {totalPortfolioValuePLN.toLocaleString('pl-PL', {
             style: 'currency',
@@ -83,50 +91,50 @@ export const DashboardScreen: React.FC<{ navigation: any }> = ({ navigation }) =
           style={styles.tradeButton}
           onPress={() => navigation.navigate('Exchange')}
         >
-          <Text style={styles.tradeButtonText}>Trade Now</Text>
+          <Text style={[styles.tradeButtonText, { color: colors.primary }]}>Trade Now</Text>
         </TouchableOpacity>
       </View>
 
-      <View style={styles.cashCard}>
-        <Text style={styles.cashLabel}>Available Cash</Text>
-        <Text style={styles.cashAmount}>
+      <View style={[styles.cashCard, { backgroundColor: colors.card }]}>
+        <Text style={[styles.cashLabel, { color: colors.textSecondary }]}>Available Cash</Text>
+        <Text style={[styles.cashAmount, { color: colors.text }]}>
           {user?.wallet.PLN.toLocaleString('pl-PL', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
           })}{' '}
-          <Text style={styles.currency}>PLN</Text>
+          <Text style={[styles.currency, { color: colors.textSecondary }]}>PLN</Text>
         </Text>
         <TouchableOpacity onPress={() => navigation.navigate('Wallet')}>
-          <Text style={styles.walletLink}>Manage Wallet →</Text>
+          <Text style={[styles.walletLink, { color: colors.primary }]}>Manage Wallet →</Text>
         </TouchableOpacity>
       </View>
 
-      <View style={styles.ratesCard}>
-        <View style={styles.ratesHeader}>
-          <Text style={styles.ratesTitle}>Live NBP Rates</Text>
+      <View style={[styles.ratesCard, { backgroundColor: colors.card }]}>
+        <View style={[styles.ratesHeader, { borderBottomColor: colors.border }]}>
+          <Text style={[styles.ratesTitle, { color: colors.text }]}>Live NBP Rates</Text>
         </View>
 
         {rates.length === 0 ? (
           <View style={styles.emptyState}>
-            <Text style={styles.emptyText}>Failed to fetch rates from NBP.</Text>
+            <Text style={[styles.emptyText, { color: colors.error }]}>Failed to fetch rates from NBP.</Text>
           </View>
         ) : (
           <View>
             {rates.slice(0, 10).map((rate) => (
-              <View key={rate.code} style={styles.rateRow}>
+              <View key={rate.code} style={[styles.rateRow, { borderBottomColor: colors.border }]}>
                 <View style={styles.rateInfo}>
-                  <Text style={styles.rateCode}>{rate.code}</Text>
-                  <Text style={styles.rateName}>{rate.currency}</Text>
+                  <Text style={[styles.rateCode, { color: colors.text }]}>{rate.code}</Text>
+                  <Text style={[styles.rateName, { color: colors.textSecondary }]}>{rate.currency}</Text>
                 </View>
                 <View style={styles.rateValues}>
-                  <Text style={styles.buyRate}>{rate.buy.toFixed(4)}</Text>
-                  <Text style={styles.sellRate}>{rate.sell.toFixed(4)}</Text>
+                  <Text style={[styles.buyRate, { color: colors.success }]}>{rate.buy.toFixed(4)}</Text>
+                  <Text style={[styles.sellRate, { color: colors.error }]}>{rate.sell.toFixed(4)}</Text>
                 </View>
                 <TouchableOpacity
-                  style={styles.tradeButtonSmall}
+                  style={[styles.tradeButtonSmall, { backgroundColor: theme === 'dark' ? '#1e293b' : '#e0f2fe' }]}
                   onPress={() => navigation.navigate('Exchange', { code: rate.code })}
                 >
-                  <Text style={styles.tradeButtonSmallText}>Trade</Text>
+                  <Text style={[styles.tradeButtonSmallText, { color: colors.primary }]}>Trade</Text>
                 </TouchableOpacity>
               </View>
             ))}
@@ -134,7 +142,7 @@ export const DashboardScreen: React.FC<{ navigation: any }> = ({ navigation }) =
         )}
 
         {lastUpdated && (
-          <Text style={styles.footerText}>
+          <Text style={[styles.footerText, { color: colors.textSecondary, backgroundColor: colors.background }]}>
             Data provided by NBP API • Updated: {lastUpdated.toLocaleTimeString()}
           </Text>
         )}
@@ -146,7 +154,6 @@ export const DashboardScreen: React.FC<{ navigation: any }> = ({ navigation }) =
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
   },
   centerContainer: {
     flex: 1,
@@ -154,18 +161,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerCard: {
-    backgroundColor: '#0284c7',
     borderRadius: 24,
     padding: 24,
     margin: 16,
     marginBottom: 16,
   },
+  headerTopRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  themeButton: {
+    padding: 4,
+  },
   headerLabel: {
-    color: '#e0f2fe',
     fontSize: 12,
     fontWeight: '600',
     textTransform: 'uppercase',
-    marginBottom: 8,
   },
   headerAmount: {
     color: '#fff',
@@ -180,25 +193,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   tradeButtonText: {
-    color: '#0284c7',
     fontSize: 14,
     fontWeight: 'bold',
   },
   cashCard: {
-    backgroundColor: '#fff',
     borderRadius: 24,
     padding: 24,
     margin: 16,
     marginTop: 0,
   },
   cashLabel: {
-    color: '#64748b',
     fontSize: 12,
     fontWeight: '600',
     marginBottom: 8,
   },
   cashAmount: {
-    color: '#1e293b',
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 8,
@@ -206,15 +215,12 @@ const styles = StyleSheet.create({
   currency: {
     fontSize: 16,
     fontWeight: 'normal',
-    color: '#94a3b8',
   },
   walletLink: {
-    color: '#0284c7',
     fontSize: 14,
     fontWeight: '600',
   },
   ratesCard: {
-    backgroundColor: '#fff',
     borderRadius: 16,
     margin: 16,
     marginTop: 0,
@@ -223,19 +229,16 @@ const styles = StyleSheet.create({
   ratesHeader: {
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
   },
   ratesTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1e293b',
   },
   emptyState: {
     padding: 32,
     alignItems: 'center',
   },
   emptyText: {
-    color: '#ef4444',
     fontSize: 14,
   },
   rateRow: {
@@ -243,7 +246,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
   },
   rateInfo: {
     flex: 1,
@@ -251,11 +253,9 @@ const styles = StyleSheet.create({
   rateCode: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#1e293b',
   },
   rateName: {
     fontSize: 12,
-    color: '#64748b',
     marginTop: 4,
   },
   rateValues: {
@@ -266,25 +266,21 @@ const styles = StyleSheet.create({
   buyRate: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#10b981',
     width: 70,
     textAlign: 'right',
   },
   sellRate: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#ef4444',
     width: 70,
     textAlign: 'right',
   },
   tradeButtonSmall: {
-    backgroundColor: '#e0f2fe',
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 6,
   },
   tradeButtonSmallText: {
-    color: '#0284c7',
     fontSize: 12,
     fontWeight: '600',
   },
@@ -292,7 +288,5 @@ const styles = StyleSheet.create({
     padding: 12,
     textAlign: 'center',
     fontSize: 10,
-    color: '#94a3b8',
-    backgroundColor: '#f8fafc',
   },
 });

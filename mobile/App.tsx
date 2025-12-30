@@ -1,29 +1,38 @@
 import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
+import { ThemeProvider, useTheme } from './src/context/ThemeContext';
 import { LoginScreen } from './src/screens/LoginScreen';
 import { DashboardScreen } from './src/screens/DashboardScreen';
 import { ExchangeScreen } from './src/screens/ExchangeScreen';
 import { WalletScreen } from './src/screens/WalletScreen';
 import { HistoryScreen } from './src/screens/HistoryScreen';
+import { StatusBar } from 'react-native';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
 function MainTabs() {
+  const { colors, theme } = useTheme();
+
   return (
     <Tab.Navigator
       screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: '#0284c7',
-        tabBarInactiveTintColor: '#94a3b8',
-        tabBarStyle: {
-          borderTopWidth: 1,
-          borderTopColor: '#e2e8f0',
+        headerStyle: {
+          backgroundColor: colors.card,
         },
+        headerTintColor: colors.text,
+        headerShadowVisible: false,
+        tabBarStyle: {
+          backgroundColor: colors.card,
+          borderTopColor: colors.border,
+          borderTopWidth: 1,
+        },
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.textSecondary,
       }}
     >
       <Tab.Screen
@@ -72,13 +81,27 @@ function MainTabs() {
 
 function AppNavigator() {
   const { user, loading } = useAuth();
+  const { theme, colors } = useTheme();
 
   if (loading) {
     return null;
   }
 
+  const MyTheme = {
+    ...DefaultTheme,
+    colors: {
+      ...DefaultTheme.colors,
+      background: colors.background,
+      card: colors.card,
+      text: colors.text,
+      border: colors.border,
+      primary: colors.primary,
+    },
+  };
+
   return (
-    <NavigationContainer>
+    <NavigationContainer theme={MyTheme}>
+      <StatusBar barStyle={theme === 'dark' ? 'light-content' : 'dark-content'} />
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {user ? (
           <Stack.Screen name="Main" component={MainTabs} />
@@ -92,9 +115,11 @@ function AppNavigator() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <AppNavigator />
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <AppNavigator />
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 
