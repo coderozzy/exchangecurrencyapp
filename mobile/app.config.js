@@ -18,6 +18,7 @@ export default {
       bundleIdentifier: "com.exchangecurrencyapp.mobile"
     },
     android: {
+      usesCleartextTraffic: true,
       adaptiveIcon: {
         backgroundColor: "#f0f9ff"
       },

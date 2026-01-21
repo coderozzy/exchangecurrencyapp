@@ -61,6 +61,36 @@ Open a **new** terminal window in the project root and run:
 *   **Wallet Management:** View portfolio balance and history.
 *   **Historical Data:** View currency rate trends via interactive charts.
 
+## Remote Access (Ngrok) Setup
+
+If you want to run the app on a physical device over a different network (using Ngrok):
+
+1.  **Modify Mobile Config (`mobile/src/config.ts`):**
+    Update the `BASE_URL` with your unique Ngrok URL.
+    ```typescript
+    export const API_CONFIG = {
+      // BASE_URL: `http://${DEV_MACHINE_IP}:8080/api`, // Comment out Local IP
+      BASE_URL: 'https://your-ngrok-url.ngrok-free.dev/api', // Use Ngrok URL
+      TIMEOUT: 10000,
+    };
+    ```
+
+2.  **Enable Tunnel Mode (`run-mobile.sh`):**
+    Open `run-mobile.sh` and change the startup command to use the tunnel flag.
+    ```bash
+    # Change this line:
+    npm start -- --lan
+    
+    # To this:
+    npm start -- --tunnel
+    ```
+
+3.  **Run Ngrok:**
+    Expose your local backend port (8080) to the internet.
+    ```bash
+    ngrok http 8080
+    ```
+
 ## Technologies
 
 *   **Frontend:** React Native, TypeScript, Expo, React Navigation, React Native Chart Kit

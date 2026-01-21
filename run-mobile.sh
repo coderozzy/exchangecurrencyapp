@@ -10,6 +10,19 @@ if ! command -v npm &> /dev/null; then
 fi
 
 cd mobile || exit
+
+# Check config.ts for USE_NGROK setting
+CONFIG_FILE="src/config.ts"
+if grep -q "const USE_NGROK = true" "$CONFIG_FILE"; then
+    echo "Detected USE_NGROK = true in config.ts"
+    echo "Starting in TUNNEL mode..."
+    MODE="--tunnel"
+else
+    echo "Detected USE_NGROK = false (or not set) in config.ts"
+    echo "Starting in LAN mode..."
+    MODE="--lan"
+fi
+
 echo "Installing dependencies (if needed)..."
 npm install
 
@@ -21,4 +34,4 @@ echo "Press 'a' for Android Emulator"
 echo "------------------------------------------"
 echo ""
 
-npm start -- --tunnel
+npm start -- $MODE
