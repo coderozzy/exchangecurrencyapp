@@ -8,6 +8,8 @@ import {
   TouchableOpacity,
   Alert,
   ActivityIndicator,
+  Platform,
+  Modal,
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { LineChart } from 'react-native-chart-kit';
@@ -26,6 +28,7 @@ export const ExchangeScreen: React.FC<{ navigation: any; route: any }> = ({ navi
 
   const [rates, setRates] = useState<ExchangeRate[]>([]);
   const [selectedCode, setSelectedCode] = useState(initialCode);
+  const [isPickerVisible, setPickerVisible] = useState(false);
   const [amount, setAmount] = useState('');
   const [mode, setMode] = useState<TransactionType.BUY | TransactionType.SELL>(TransactionType.BUY);
   const [history, setHistory] = useState<RateHistoryItem[]>([]);
@@ -116,18 +119,63 @@ export const ExchangeScreen: React.FC<{ navigation: any; route: any }> = ({ navi
       <Text style={[styles.title, { color: colors.text }]}>Currency Exchange</Text>
 
       <View style={[styles.card, { backgroundColor: colors.card }]}>
-        <View style={styles.selectorContainer}>
-          <Picker
-            selectedValue={selectedCode}
-            onValueChange={setSelectedCode}
-            style={[styles.picker, { color: colors.text, backgroundColor: colors.inputBackground }]}
-            dropdownIconColor={colors.text}
-          >
-            {rates.map((r) => (
-              <Picker.Item key={r.code} label={`${r.code} - ${r.currency}`} value={r.code} color={colors.text} />
-            ))}
-          </Picker>
-        </View>
+        {Platform.OS === 'ios' ? (
+          <>
+            <TouchableOpacity
+              onPress={() => setPickerVisible(true)}
+              style={[
+                styles.iosPickerButton,
+                { backgroundColor: colors.inputBackground, borderColor: colors.border }
+              ]}
+            >
+              <Text style={{ color: colors.text, fontSize: 16 }}>
+                {selectedCode} - {rates.find(r => r.code === selectedCode)?.currency}
+              </Text>
+              <Text style={{ color: colors.textSecondary }}>▼</Text>
+            </TouchableOpacity>
+
+            <Modal
+              visible={isPickerVisible}
+              transparent={true}
+              animationType="slide"
+              onRequestClose={() => setPickerVisible(false)}
+            >
+              <View style={styles.modalOverlay}>
+                <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
+                  <View style={styles.modalHeader}>
+                    <Text style={[styles.modalTitle, { color: colors.text }]}>Select Currency</Text>
+                    <TouchableOpacity onPress={() => setPickerVisible(false)}>
+                      <Text style={{ color: colors.primary, fontSize: 16 }}>Done</Text>
+                    </TouchableOpacity>
+                  </View>
+                  <Picker
+                    selectedValue={selectedCode}
+                    onValueChange={(itemValue) => setSelectedCode(itemValue)}
+                    style={{ color: colors.text }}
+                    itemStyle={{ color: colors.text, maxHeight: 200 }}
+                  >
+                    {rates.map((r) => (
+                      <Picker.Item key={r.code} label={`${r.code} - ${r.currency}`} value={r.code} color={colors.text} />
+                    ))}
+                  </Picker>
+                </View>
+              </View>
+            </Modal>
+          </>
+        ) : (
+          <View style={styles.selectorContainer}>
+            <Picker
+              selectedValue={selectedCode}
+              onValueChange={setSelectedCode}
+              style={[styles.picker, { color: colors.text, backgroundColor: colors.inputBackground }]}
+              dropdownIconColor={colors.text}
+            >
+              {rates.map((r) => (
+                <Picker.Item key={r.code} label={`${r.code} - ${r.currency}`} value={r.code} color={colors.text} />
+              ))}
+            </Picker>
+          </View>
+        )}
 
         {history.length > 0 && (
           <View style={styles.chartContainer}>
@@ -281,6 +329,38 @@ const styles = StyleSheet.create({
   },
   picker: {
     height: 50,
+  },
+  iosPickerButton: {
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  modalContent: {
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    paddingBottom: 40,
+    maxHeight: '50%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+    paddingHorizontal: 10,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
   },
   chartContainer: {
     marginBottom: 16,
