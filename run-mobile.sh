@@ -21,4 +21,4 @@ echo "Press 'a' for Android Emulator"
 echo "------------------------------------------"
 echo ""
 
-npm start
+npm start -- --tunnel

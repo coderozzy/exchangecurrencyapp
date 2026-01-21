@@ -101,10 +101,10 @@ export const ExchangeScreen: React.FC<{ navigation: any; route: any }> = ({ navi
   }
 
   const chartData = {
-    labels: history.slice(-10).map((h) => new Date(h.effectiveDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })),
+    labels: history.slice(-15).map((h, index) => index % 4 === 0 ? new Date(h.effectiveDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : ''),
     datasets: [
       {
-        data: history.slice(-10).map((h) => h.mid),
+        data: history.slice(-15).map((h) => h.mid),
         color: (opacity = 1) => colors.primary,
         strokeWidth: 2,
       },
@@ -133,20 +133,20 @@ export const ExchangeScreen: React.FC<{ navigation: any; route: any }> = ({ navi
           <View style={styles.chartContainer}>
             <LineChart
               data={chartData}
-              width={screenWidth - 64}
-              height={200}
+              width={screenWidth - 48}
+              height={260}
               chartConfig={{
                 backgroundColor: colors.card,
                 backgroundGradientFrom: colors.card,
                 backgroundGradientTo: colors.card,
-                decimalPlaces: 4,
+                decimalPlaces: 3,
                 color: (opacity = 1) => colors.primary,
                 labelColor: (opacity = 1) => colors.textSecondary,
                 style: {
                   borderRadius: 16,
                 },
                 propsForDots: {
-                  r: "4",
+                  r: "5",
                   strokeWidth: "2",
                   stroke: colors.primary
                 }

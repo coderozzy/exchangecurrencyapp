@@ -15,7 +15,7 @@ import { ExchangeRate } from '../types';
 import { Ionicons } from '@expo/vector-icons';
 
 export const DashboardScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { colors, theme, toggleTheme } = useTheme();
   const [rates, setRates] = useState<ExchangeRate[]>([]);
   const [loading, setLoading] = useState(true);
@@ -75,9 +75,14 @@ export const DashboardScreen: React.FC<{ navigation: any }> = ({ navigation }) =
       <View style={[styles.headerCard, { backgroundColor: colors.primary }]}>
         <View style={styles.headerTopRow}>
           <Text style={[styles.headerLabel, { color: '#e0f2fe' }]}>Total Portfolio Value</Text>
-          <TouchableOpacity onPress={toggleTheme} style={styles.themeButton}>
-            <Ionicons name={theme === 'dark' ? 'sunny' : 'moon'} size={24} color="#fff" />
-          </TouchableOpacity>
+          <View style={styles.headerButtons}>
+            <TouchableOpacity onPress={toggleTheme} style={styles.iconButton}>
+              <Ionicons name={theme === 'dark' ? 'sunny' : 'moon'} size={24} color="#fff" />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={logout} style={styles.iconButton}>
+              <Ionicons name="log-out-outline" size={24} color="#fff" />
+            </TouchableOpacity>
+          </View>
         </View>
         <Text style={styles.headerAmount}>
           {totalPortfolioValuePLN.toLocaleString('pl-PL', {
@@ -172,7 +177,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 8,
   },
-  themeButton: {
+  headerButtons: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  iconButton: {
     padding: 4,
   },
   headerLabel: {
